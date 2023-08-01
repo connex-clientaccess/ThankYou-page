@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You</title>
+	<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container">
+		<img class="img" src="./image/121772865-envelope-and-document-and-round-green-check-mark-icon-vector-illustration.webp" alt="envelope" />
+        <h1>Thank you!</h1>
+        <p>Your submission has been received.</p>
+        <p>Results loading in <span id="timer"></span>s.</p>
+        <p id="result"></p>
+		<p id="refresh"></p>
+    </div>
+
+    <script type="text/javascript">
+        const fetchResults = async () => {
+            const url = "https://api.jotform.com/form/232081510390041/submissions?apiKey=16226e39d6e437fcdba89141b1f63a9e&id=232081510390041&limit=1";
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.content.length > 0 ? data.content[0].answers[3].answer : null;
+        };
+
+        const displayResults = async () => {
+            const result = await fetchResults();
+            if (result) {
+                clearInterval(intervalId);
+                document.getElementById('result').textContent = result;
+            } else {
+                document.getElementById("refresh").textContent = 'Refresh the page to check again.';
+            }
+        };
+
+        const restartCountdown = () => {
+            document.getElementById("timer").textContent = '';
+            countDown();
+        };
+
+        const countDown = () => {
+            let count = 40;
+
+            intervalId = setInterval(() => {
+                if (count > 0) {
+                    document.getElementById("timer").textContent = count--;
+                } else {
+                    displayResults();
+                }
+            }, 1000);
+        };
+
+        // Check if the page was refreshed and restart the countdown accordingly.
+        const isRefreshed = performance.navigation.type === 1;
+        if (isRefreshed) {
+            restartCountdown();
+        } else {
+            countDown();
+        }
+    </script>
+</body>
+</html>

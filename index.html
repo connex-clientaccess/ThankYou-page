@@ -20,7 +20,7 @@
 		 let countdownCompleted = false;
 		 
         const fetchResults = async () => {
-            const url = "https://api.jotform.com/form/23208151039004199/submissions?apiKey=16226e39d6e437fcdba89141b1f63a9e&id=232081510390041&limit=1";
+            const url = "https://api.jotform.com/form/232081510390041/submissions?apiKey=16226e39d6e437fcdba89141b1f63a9e&id=232081510390041&limit=1";
             const response = await fetch(url);
             const data = await response.json();
             return data.content.length > 0 ? data.content[0].answers[3].answer : null;

@@ -11,7 +11,7 @@
 		<img class="img" src="./image/121772865-envelope-and-document-and-round-green-check-mark-icon-vector-illustration.webp" alt="envelope" />
         <h1>Thank you!</h1>
         <p>Your submission has been received.</p>
-        <p id="check">Will Check for Results in <span id="timer"></span>s.</p>
+        <p id="check">Checking for Results in <span id="timer"></span>s.</p>
         <p id="result"></p>
 		<p id="refresh"></p>
     </div>
@@ -30,6 +30,7 @@
             const result = await fetchResults();
             if (result) {
                 document.getElementById('result').textContent = result;
+				document.getElementById('check').textContent = ''
             } else {
                 document.getElementById("refresh").textContent = 'Ooops! 😟 Results are not ready yet. Kindly Refresh the page in 60 seconds to check again.';
 				document.getElementById('check').textContent = ''

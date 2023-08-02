@@ -1,59 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thank You</title>
-	<link rel="stylesheet" href="./style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
     <div class="container">
-		<img class="img" src="./image/121772865-envelope-and-document-and-round-green-check-mark-icon-vector-illustration.webp" alt="envelope" />
-        <h1>Thank you!</h1>
-        <p>Your submission has been received.</p>
-        <p id="check">Checking for Results in <span id="timer"></span>s.</p>
-        <p id="result"></p>
-		<p id="refresh"></p>
+      <img
+        class="img"
+        src="./image/121772865-envelope-and-document-and-round-green-check-mark-icon-vector-illustration.webp"
+        alt="envelope"
+      />
+      <h1>Thank you!</h1>
+      <p>Your submission has been received.</p>
+      <p id="wait">Please Wait...</p>
+      <div id="all-results">
+      <p id="timer"></p>
+      <p id="result"></p>
+      <p id="refresh"></p>
+      </div>
     </div>
 
     <script type="text/javascript">
-		 let countdownCompleted = false;
-		 
-        const fetchResults = async () => {
-            const url = "https://api.jotform.com/form/232081510390041/submissions?apiKey=16226e39d6e437fcdba89141b1f63a9e&id=232081510390041&limit=1";
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.content.length > 0 ? data.content[0].answers[3].answer : null;
-        };
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("submissionId");
 
-        const displayResults = async () => {
-            const result = await fetchResults();
-            if (result) {
-                document.getElementById('result').textContent = result;
-				document.getElementById('check').textContent = ''
-            } else {
-                document.getElementById("refresh").textContent = 'Ooops! 😟 Results are not ready yet. Kindly Refresh the page in 60 seconds to check again.';
-				document.getElementById('check').textContent = ''
+      const loading = () => {
+          let count = 5;
+           
+          interval = setInterval(() => {
+              if (count > 0) {
+                count --;
+                  document.getElementById("all-results").style.display = `none`;
+              } else {
+                document.getElementById("wait").style.display = `none`;
+                document.getElementById("all-results").style.display = `block`;
+                clearInterval(interval)
             }
-        };
-		
-        const countDown = () => {
-            let count = 40;
-			let countState = localStorage.getItem('count')
-			
+        }, 1000);
+      };
+      loading();
+      
 
-            intervalId = setInterval(() => {
-                if (count > 0 && countState === null) {
-                    document.getElementById("timer").textContent = count--;
-                } else {
-                    displayResults();
-					countdownCompleted = true;
-					localStorage.setItem('count', countdownCompleted)
-                }
-            }, 1000);
-        };
-		
-		countDown()
+      const fetchResults = async () => {
+        const url = `https://api.airtable.com/v0/appEYqtmN88t2Mm3d/tblRLstrGvmgAACqw?filterByFormula=SEARCH("${id}", {Submission id})`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json",
+            Authorization: "Bearer patlHV2r89v85ZCLb.d32f92e980da966d98bf3b4aaa4db9473aa76576a8b8d1b8ff180cf98ecaa7eb"
+          },
+        });
+        const data = await response.json();
+        return data.records
+      };
+      
+
+       const displayResults = async () => {
+          const result = await fetchResults();
+          if (result.length > 0 && result[0].fields.Status === "Done") {
+              document.getElementById('result').textContent = `These are the results: ${result[0].fields.Notes}`;
+              document.getElementById("refresh").textContent = ''
+              document.getElementById("timer").textContent = ''
+          } else if (result.length === 0) {
+              document.getElementById("refresh").textContent = 'Still waiting for results';
+              countDown()
+      		document.getElementById('check').textContent = ''
+          } else if (result.length > 0 && result[0].fields.Status !== "Done"){
+            document.getElementById("refresh").textContent = 'Found your submission, waiting for processing';
+              countDown()
+      		document.getElementById('check').textContent = ''
+          } 
+      };
+      displayResults()
+
+        const countDown = () => {
+          let count = 30;
+
+          intervalId = setInterval(() => {
+              if (count > 0) {
+                  document.getElementById("timer").textContent = `Checking in ${count--}s`;
+              } else {
+                displayResults();
+                clearInterval(intervalId)
+            }
+        }, 1000);
+      };
     </script>
-</body>
+  </body>
 </html>
